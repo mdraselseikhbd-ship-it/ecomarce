@@ -172,3 +172,8 @@ button.link { background: none; border: 0; padding: 0; color: var(--primary); cu
   .table.card { display: block; overflow-x: auto; }
   .search { order: 3; flex-basis: 100%; }
 }
+
+.status-requested, .status-unpaid { background: #fef3c7; color: #92400e; }
+.status-paid { background: #dcfce7; color: #166534; }
+.status-rejected, .status-failed, .status-expired { background: #fee2e2; color: #991b1b; }
+.stat a { display: block; margin-top: 4px; }

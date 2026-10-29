@@ -6,7 +6,8 @@
   <div class="stat card"><span>Pending items</span><strong><%= stats.pending %></strong></div>
   <div class="stat card"><span>Gross sales</span><strong><%= money(stats.gross) %></strong></div>
   <div class="stat card"><span>Commission</span><strong><%= money(stats.commission) %></strong></div>
-  <div class="stat card"><span>Earned (delivered)</span><strong><%= money(stats.earned) %></strong></div>
+  <div class="stat card"><span>Earned (delivered)</span><strong><%= money(stats.balance.earned) %></strong></div>
+  <div class="stat card"><span>Available balance</span><strong><%= money(stats.balance.available) %></strong><a class="small" href="/vendor/payouts">Withdraw →</a></div>
 </div>
 <% if (stats.lowStock) { %><div class="alert alert-info"><%= stats.lowStock %> product(s) have 5 or fewer items in stock. <a href="/vendor/products">Restock →</a></div><% } %>
 <h2>Recent order items</h2>

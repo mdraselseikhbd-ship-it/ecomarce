@@ -5,6 +5,8 @@ const express = require('express');
 const multer = require('multer');
 const { db, transaction } = require('../db');
 const { uniqueSlug, toPaisa, toInt } = require('../util');
+const mailer = require('../mailer');
+const { PAYABLE_ORDER, storeBalance } = require('../payouts');
 const { flash, requireRole } = require('../middleware');
 
 const router = express.Router();
@@ -53,13 +55,13 @@ router.get('/', (req, res) => {
       COUNT(DISTINCT oi.order_id) AS orders,
       COALESCE(SUM(CASE WHEN oi.status != 'cancelled' THEN oi.unit_price * oi.quantity END), 0) AS gross,
       COALESCE(SUM(CASE WHEN oi.status != 'cancelled' THEN oi.commission END), 0) AS commission,
-      COALESCE(SUM(CASE WHEN oi.status = 'delivered' THEN oi.unit_price * oi.quantity - oi.commission END), 0) AS earned,
       COALESCE(SUM(CASE WHEN oi.status = 'pending' THEN 1 END), 0) AS pending
-    FROM order_items oi WHERE oi.store_id = ?`).get(storeId);
+    FROM order_items oi JOIN orders o ON o.id = oi.order_id WHERE oi.store_id = ? AND ${PAYABLE_ORDER}`).get(storeId);
+  stats.balance = storeBalance(storeId);
   stats.products = db.prepare('SELECT COUNT(*) AS n FROM products WHERE store_id = ?').get(storeId).n;
   stats.lowStock = db.prepare('SELECT COUNT(*) AS n FROM products WHERE store_id = ? AND stock <= 5').get(storeId).n;
   const recent = db.prepare(`SELECT oi.*, o.shipping_name, o.created_at FROM order_items oi JOIN orders o ON o.id = oi.order_id
-    WHERE oi.store_id = ? ORDER BY oi.id DESC LIMIT 8`).all(storeId);
+    WHERE oi.store_id = ? AND ${PAYABLE_ORDER} ORDER BY oi.id DESC LIMIT 8`).all(storeId);
   res.render('vendor/dashboard', { title: 'Seller dashboard', stats, recent });
 });
 
@@ -157,9 +159,10 @@ router.get('/orders', (req, res) => {
   const params = [req.store.id];
   let filter = '';
   if (status) { filter = 'AND oi.status = ?'; params.push(status); }
-  const items = db.prepare(`SELECT oi.*, o.shipping_name, o.phone, o.address, o.payment_method, o.created_at
+  // Online orders stay hidden from vendors until the payment is confirmed.
+  const items = db.prepare(`SELECT oi.*, o.shipping_name, o.phone, o.address, o.payment_method, o.payment_status, o.created_at
     FROM order_items oi JOIN orders o ON o.id = oi.order_id
-    WHERE oi.store_id = ? ${filter} ORDER BY oi.id DESC`).all(...params);
+    WHERE oi.store_id = ? AND ${PAYABLE_ORDER} ${filter} ORDER BY oi.id DESC`).all(...params);
   res.render('vendor/orders', { title: 'Orders', items, status });
 });
 
@@ -173,7 +176,8 @@ const TRANSITIONS = {
 };
 
 router.post('/orders/items/:id/status', (req, res) => {
-  const item = db.prepare('SELECT * FROM order_items WHERE id = ? AND store_id = ?').get(req.params.id, req.store.id);
+  const item = db.prepare(`SELECT oi.*, o.payment_method FROM order_items oi JOIN orders o ON o.id = oi.order_id
+    WHERE oi.id = ? AND oi.store_id = ? AND ${PAYABLE_ORDER}`).get(req.params.id, req.store.id);
   if (!item) return res.status(404).render('error', { title: 'Not found', message: 'Order item not found.' });
   const next = String(req.body.status || '');
   if (!TRANSITIONS[item.status].includes(next)) {
@@ -185,9 +189,40 @@ router.post('/orders/items/:id/status', (req, res) => {
     if (next === 'cancelled' && item.product_id) {
       db.prepare('UPDATE products SET stock = stock + ? WHERE id = ?').run(item.quantity, item.product_id);
     }
+    // A cash-on-delivery order is paid once every remaining item has been delivered.
+    if (next === 'delivered' && item.payment_method === 'cod') {
+      const open = db.prepare("SELECT COUNT(*) AS n FROM order_items WHERE order_id = ? AND status NOT IN ('delivered', 'cancelled')").get(item.order_id).n;
+      if (!open) db.prepare("UPDATE orders SET payment_status = 'paid' WHERE id = ?").run(item.order_id);
+    }
   });
+  mailer.itemStatusChanged(item.id);
   flash(req, 'success', `Order #${item.order_id} item marked as ${next}.`);
   res.redirect('/vendor/orders' + (req.body.filter ? `?status=${encodeURIComponent(req.body.filter)}` : ''));
+});
+
+const PAYOUT_METHODS = { bkash: 'bKash', nagad: 'Nagad', bank: 'Bank transfer' };
+
+router.get('/payouts', (req, res) => {
+  const payouts = db.prepare('SELECT * FROM payouts WHERE store_id = ? ORDER BY id DESC').all(req.store.id);
+  res.render('vendor/payouts', { title: 'Payouts', balance: storeBalance(req.store.id), payouts, methods: PAYOUT_METHODS });
+});
+
+router.post('/payouts', (req, res) => {
+  const amount = toPaisa(req.body.amount);
+  const method = String(req.body.method || '');
+  const account = String(req.body.account || '').trim();
+  if (!PAYOUT_METHODS[method] || !account) {
+    flash(req, 'error', 'Choose a payout method and enter your account details.');
+    return res.redirect('/vendor/payouts');
+  }
+  const created = transaction(() => {
+    // The balance is re-read inside the transaction so two requests can't overdraw it.
+    if (!amount || amount > storeBalance(req.store.id).available) return false;
+    db.prepare('INSERT INTO payouts (store_id, amount, method, account) VALUES (?, ?, ?, ?)').run(req.store.id, amount, method, account);
+    return true;
+  });
+  flash(req, created ? 'success' : 'error', created ? 'Payout requested. The admin will process it soon.' : 'Amount must be more than 0 and not exceed your available balance.');
+  res.redirect('/vendor/payouts');
 });
 
 router.get('/settings', (req, res) => {

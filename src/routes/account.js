@@ -35,8 +35,12 @@ router.get('/orders/:id', (req, res) => {
 
 // Customers may cancel the line items that vendors have not started processing yet.
 router.post('/orders/:id/cancel', (req, res) => {
-  const order = db.prepare('SELECT id FROM orders WHERE id = ? AND user_id = ?').get(req.params.id, req.user.id);
+  const order = db.prepare('SELECT id, payment_method, payment_status FROM orders WHERE id = ? AND user_id = ?').get(req.params.id, req.user.id);
   if (!order) return res.status(404).render('error', { title: 'Not found', message: 'Order not found.' });
+  if (order.payment_method === 'online' && order.payment_status === 'paid') {
+    flash(req, 'error', 'This order is already paid. Please contact the seller to cancel and get a refund.');
+    return res.redirect(`/account/orders/${order.id}`);
+  }
   const cancelled = transaction(() => {
     const pending = db.prepare("SELECT id, product_id, quantity FROM order_items WHERE order_id = ? AND status = 'pending'").all(order.id);
     for (const item of pending) {

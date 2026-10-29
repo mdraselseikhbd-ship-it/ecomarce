@@ -9,8 +9,10 @@
     <label>Phone <input name="phone" value="<%= form.phone || '' %>" placeholder="01XXXXXXXXX" required></label>
     <label>Address <textarea name="address" rows="3" required><%= form.address || '' %></textarea></label>
     <h3>Payment</h3>
-    <label class="radio"><input type="radio" name="payment_method" value="cod" <%= form.payment_method !== 'bkash' ? 'checked' : '' %>> Cash on delivery</label>
-    <label class="radio"><input type="radio" name="payment_method" value="bkash" <%= form.payment_method === 'bkash' ? 'checked' : '' %>> bKash (seller will contact you)</label>
+    <label class="radio"><input type="radio" name="payment_method" value="cod" <%= form.payment_method !== 'online' ? 'checked' : '' %>> Cash on delivery</label>
+    <% if (onlinePayment) { %>
+      <label class="radio"><input type="radio" name="payment_method" value="online" <%= form.payment_method === 'online' ? 'checked' : '' %>> Pay online — bKash, Nagad, Rocket or card (SSLCommerz)</label>
+    <% } %>
     <button class="btn btn-block">Place order — <%= money(total) %></button>
   </form>
   <aside class="card">

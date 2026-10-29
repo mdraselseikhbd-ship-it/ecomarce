@@ -95,8 +95,33 @@ CREATE INDEX IF NOT EXISTS idx_products_category ON products(category_id);
 CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);
 CREATE INDEX IF NOT EXISTS idx_order_items_store ON order_items(store_id);
 
+CREATE TABLE IF NOT EXISTS payouts (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  store_id     INTEGER NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
+  amount       INTEGER NOT NULL CHECK (amount > 0),
+  method       TEXT NOT NULL CHECK (method IN ('bkash', 'nagad', 'bank')),
+  account      TEXT NOT NULL,
+  status       TEXT NOT NULL DEFAULT 'requested' CHECK (status IN ('requested', 'paid', 'rejected')),
+  note         TEXT NOT NULL DEFAULT '',
+  created_at   TEXT NOT NULL DEFAULT (datetime('now')),
+  processed_at TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_payouts_store ON payouts(store_id);
+
 INSERT OR IGNORE INTO settings (key, value) VALUES ('commission_percent', '10');
 `);
+
+// Adds a column to databases created before it existed.
+function addColumn(table, column, definition) {
+  const exists = db.prepare(`PRAGMA table_info(${table})`).all().some((c) => c.name === column);
+  if (!exists) db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+}
+
+// payment_status: 'unpaid' until an online payment is confirmed; COD orders stay 'unpaid' until delivery.
+addColumn('orders', 'payment_status', "TEXT NOT NULL DEFAULT 'unpaid'");
+addColumn('orders', 'transaction_id', 'TEXT');
+db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_orders_tran ON orders(transaction_id)');
 
 function transaction(fn) {
   db.exec('BEGIN IMMEDIATE');

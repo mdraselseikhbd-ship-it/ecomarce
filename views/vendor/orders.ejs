@@ -14,7 +14,7 @@
         <tr>
           <td>#<%= i.order_id %><br><span class="muted small"><%= i.created_at.slice(0, 16) %></span></td>
           <td><%= i.product_name %> × <%= i.quantity %></td>
-          <td class="small"><%= i.shipping_name %><br><%= i.phone %><br><%= i.address %><br><span class="muted"><%= i.payment_method === 'bkash' ? 'bKash' : 'COD' %></span></td>
+          <td class="small"><%= i.shipping_name %><br><%= i.phone %><br><%= i.address %><br><span class="muted"><%= paymentLabel(i.payment_method) %><%= i.payment_status === 'paid' ? ' · paid' : '' %></span></td>
           <td class="right"><%= money(i.unit_price * i.quantity) %><br><span class="muted small">fee <%= money(i.commission) %></span></td>
           <td><%- include('../partials/status', { s: i.status }) %></td>
           <td class="nowrap">

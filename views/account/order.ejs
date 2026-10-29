@@ -1,7 +1,17 @@
 <%- include('../partials/header') %>
+<% const awaitingPayment = order.payment_method === 'online' && order.payment_status !== 'paid' && items.some((i) => i.status !== 'cancelled'); %>
+<% if (query.payment === 'success') { %><div class="alert alert-success">Payment received. Thank you!</div><% } %>
+<% if (query.payment === 'failed') { %><div class="alert alert-error">Payment failed. You can try again below.</div><% } %>
+<% if (query.payment === 'cancelled') { %><div class="alert alert-info">Payment was cancelled. You can try again below.</div><% } %>
+<% if (awaitingPayment) { %>
+  <div class="alert alert-info row-between">
+    <span>This order is waiting for payment. Unpaid orders are cancelled automatically after 1 hour.</span>
+    <a class="btn btn-small" href="/payment/start/<%= order.id %>">Pay now — <%= money(order.total) %></a>
+  </div>
+<% } %>
 <div class="section-head">
   <h1>Order #<%= order.id %> <%- include('../partials/status', { s: order.status }) %></h1>
-  <% if (items.some((i) => i.status === 'pending')) { %>
+  <% if (items.some((i) => i.status === 'pending') && !(order.payment_method === 'online' && order.payment_status === 'paid')) { %>
     <form method="post" action="/account/orders/<%= order.id %>/cancel" onsubmit="return confirm('Cancel all pending items?')">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <button class="btn btn-ghost text-red">Cancel pending items</button>
@@ -29,7 +39,7 @@
   <aside class="card">
     <h3>Delivery</h3>
     <p><%= order.shipping_name %><br><%= order.phone %><br><%= order.address %></p>
-    <p class="small muted">Payment: <%= order.payment_method === 'bkash' ? 'bKash' : 'Cash on delivery' %><br>Placed: <%= order.created_at %></p>
+    <p class="small muted">Payment: <%= paymentLabel(order.payment_method) %> · <%= order.payment_status %><br>Placed: <%= order.created_at %></p>
     <p class="small muted">Once an item is delivered you can leave a review on its product page.</p>
   </aside>
 </div>

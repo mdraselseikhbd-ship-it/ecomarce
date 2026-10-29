@@ -1,0 +1,29 @@
+<%- include('../partials/header') %>
+<%- include('../partials/admin-nav') %>
+<% if (!payouts.length) { %><div class="empty"><p>No payout requests yet.</p></div><% } else { %>
+<table class="table card">
+  <thead><tr><th>Date</th><th>Store</th><th>Send to</th><th class="right">Amount</th><th>Status</th><th>Action / note</th></tr></thead>
+  <tbody>
+    <% for (const p of payouts) { %>
+      <tr>
+        <td><%= p.created_at.slice(0, 16) %></td>
+        <td><%= p.store_name %></td>
+        <td><span class="tag"><%= p.method %></span> <%= p.account %></td>
+        <td class="right"><strong><%= money(p.amount) %></strong></td>
+        <td><%- include('../partials/status', { s: p.status }) %></td>
+        <td>
+          <% if (p.status === 'requested') { %>
+            <form method="post" action="/admin/payouts/<%= p.id %>" class="row">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <input name="note" placeholder="Transaction ID / note">
+              <button class="btn btn-small" name="action" value="paid">Mark paid</button>
+              <button class="btn btn-small btn-ghost text-red" name="action" value="rejected">Reject</button>
+            </form>
+          <% } else { %><span class="small"><%= p.note %></span><% } %>
+        </td>
+      </tr>
+    <% } %>
+  </tbody>
+</table>
+<% } %>
+<%- include('../partials/footer') %>

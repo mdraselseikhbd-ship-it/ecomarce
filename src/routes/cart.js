@@ -2,6 +2,9 @@ const express = require('express');
 const { db, transaction, getSetting } = require('../db');
 const { toInt } = require('../util');
 const { flash, requireLogin } = require('../middleware');
+const crypto = require('node:crypto');
+const payment = require('../payment');
+const mailer = require('../mailer');
 
 const router = express.Router();
 
@@ -81,7 +84,7 @@ router.get('/checkout', requireLogin, (req, res) => {
   }
   const cart = loadCart(req);
   if (!cart.items.length) return res.redirect('/cart');
-  res.render('shop/checkout', { title: 'Checkout', ...cart, form: { shipping_name: req.user.name }, errors: [] });
+  res.render('shop/checkout', { title: 'Checkout', ...cart, form: { shipping_name: req.user.name }, errors: [], onlinePayment: payment.isEnabled() });
 });
 
 router.post('/checkout', requireLogin, (req, res) => {
@@ -93,13 +96,15 @@ router.post('/checkout', requireLogin, (req, res) => {
     shipping_name: String(req.body.shipping_name || '').trim(),
     phone: String(req.body.phone || '').trim(),
     address: String(req.body.address || '').trim(),
-    payment_method: req.body.payment_method === 'bkash' ? 'bkash' : 'cod',
+    payment_method: req.body.payment_method === 'online' && payment.isEnabled() ? 'online' : 'cod',
   };
   const errors = [];
   if (!form.shipping_name) errors.push('Name is required.');
   if (!/^\+?[0-9\s-]{8,15}$/.test(form.phone)) errors.push('A valid phone number is required.');
   if (form.address.length < 5) errors.push('Full delivery address is required.');
-  if (errors.length) return res.status(422).render('shop/checkout', { title: 'Checkout', ...cart, form, errors });
+  if (errors.length) {
+    return res.status(422).render('shop/checkout', { title: 'Checkout', ...cart, form, errors, onlinePayment: payment.isEnabled() });
+  }
 
   const commissionPercent = Number(getSetting('commission_percent')) || 0;
   let orderId;
@@ -112,8 +117,10 @@ router.post('/checkout', requireLogin, (req, res) => {
           throw Object.assign(new Error(`Not enough stock for ${item.name}.`), { stock: true });
         }
       }
-      const id = Number(db.prepare('INSERT INTO orders (user_id, total, shipping_name, phone, address, payment_method) VALUES (?, ?, ?, ?, ?, ?)')
-        .run(req.user.id, cart.total, form.shipping_name, form.phone, form.address, form.payment_method).lastInsertRowid);
+      const transactionId = form.payment_method === 'online' ? `BZR-${Date.now()}-${crypto.randomBytes(4).toString('hex')}` : null;
+      const id = Number(db.prepare(`INSERT INTO orders (user_id, total, shipping_name, phone, address, payment_method, transaction_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?)`)
+        .run(req.user.id, cart.total, form.shipping_name, form.phone, form.address, form.payment_method, transactionId).lastInsertRowid);
       const insertItem = db.prepare(`INSERT INTO order_items (order_id, product_id, store_id, product_name, unit_price, quantity, commission)
         VALUES (?, ?, ?, ?, ?, ?, ?)`);
       for (const item of cart.items) {
@@ -129,6 +136,8 @@ router.post('/checkout', requireLogin, (req, res) => {
   }
 
   req.session.cart = {};
+  if (form.payment_method === 'online') return res.redirect(`/payment/start/${orderId}`);
+  mailer.orderPlaced(orderId);
   flash(req, 'success', `Order #${orderId} placed successfully!`);
   res.redirect(`/account/orders/${orderId}`);
 });

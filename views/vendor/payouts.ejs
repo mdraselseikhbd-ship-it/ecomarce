@@ -1,0 +1,42 @@
+<%- include('../partials/header') %>
+<%- include('../partials/vendor-nav') %>
+<div class="stats">
+  <div class="stat card"><span>Total earned</span><strong><%= money(balance.earned) %></strong></div>
+  <div class="stat card"><span>Paid out</span><strong><%= money(balance.paid) %></strong></div>
+  <div class="stat card"><span>Requested</span><strong><%= money(balance.requested) %></strong></div>
+  <div class="stat card"><span>Available</span><strong class="text-green"><%= money(balance.available) %></strong></div>
+</div>
+<p class="muted small">You earn the item price minus the marketplace commission once an item is delivered.</p>
+
+<section class="card form-card">
+  <h2>Request a payout</h2>
+  <% if (balance.available > 0) { %>
+    <form method="post" action="/vendor/payouts">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="row">
+        <label>Amount (৳) <input type="number" name="amount" step="0.01" min="1" max="<%= (balance.available / 100).toFixed(2) %>" value="<%= (balance.available / 100).toFixed(2) %>" required></label>
+        <label>Method
+          <select name="method"><% for (const [value, label] of Object.entries(methods)) { %><option value="<%= value %>"><%= label %></option><% } %></select>
+        </label>
+      </div>
+      <label>Account details <input name="account" placeholder="bKash/Nagad number, or bank name + account number" required></label>
+      <button class="btn">Request payout</button>
+    </form>
+  <% } else { %>
+    <p class="muted">No balance available yet.</p>
+  <% } %>
+</section>
+
+<h2>History</h2>
+<% if (payouts.length) { %>
+  <table class="table card">
+    <thead><tr><th>Date</th><th>Method</th><th>Account</th><th class="right">Amount</th><th>Status</th><th>Note</th></tr></thead>
+    <tbody>
+      <% for (const p of payouts) { %>
+        <tr><td><%= p.created_at.slice(0, 10) %></td><td><%= methods[p.method] %></td><td><%= p.account %></td>
+          <td class="right"><%= money(p.amount) %></td><td><%- include('../partials/status', { s: p.status }) %></td><td class="small"><%= p.note %></td></tr>
+      <% } %>
+    </tbody>
+  </table>
+<% } else { %><p class="muted">No payouts yet.</p><% } %>
+<%- include('../partials/footer') %>

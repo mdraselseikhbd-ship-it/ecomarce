@@ -1,6 +1,7 @@
 <%- include('../partials/header') %>
 <%- include('../partials/admin-nav') %>
 <% if (stats.pendingStores) { %><div class="alert alert-info"><%= stats.pendingStores %> store(s) waiting for approval. <a href="/admin/vendors">Review →</a></div><% } %>
+<% if (stats.pendingPayouts) { %><div class="alert alert-info"><%= stats.pendingPayouts %> payout request(s) waiting. <a href="/admin/payouts">Process →</a></div><% } %>
 <div class="stats">
   <div class="stat card"><span>Customers</span><strong><%= stats.users %></strong></div>
   <div class="stat card"><span>Active stores</span><strong><%= stats.stores %></strong></div>
