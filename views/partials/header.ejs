@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %> · Bazar</title>
+  <link rel="stylesheet" href="/public/css/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="container topbar-inner">
+    <a class="brand" href="/">Bazar<span>.</span></a>
+    <form class="search" action="/products" method="get">
+      <input type="search" name="q" placeholder="Search products…" value="<%= typeof q !== 'undefined' ? q : '' %>">
+      <button type="submit">Search</button>
+    </form>
+    <nav class="nav">
+      <a href="/products">Shop</a>
+      <a href="/stores">Stores</a>
+      <% if (!user || user.role === 'customer') { %>
+        <a href="/cart" class="cart-link">Cart<% if (cartCount) { %> <span class="badge"><%= cartCount %></span><% } %></a>
+      <% } %>
+      <% if (user) { %>
+        <% if (user.role === 'admin') { %><a href="/admin">Admin</a><% } %>
+        <% if (user.role === 'vendor') { %><a href="/vendor">My store</a><% } %>
+        <% if (user.role === 'customer') { %><a href="/account/orders">My orders</a><% } %>
+        <a href="/account/profile" title="<%= user.email %>"><%= user.name.split(' ')[0] %></a>
+        <form action="/logout" method="post" class="inline">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button class="link">Logout</button>
+        </form>
+      <% } else { %>
+        <a href="/login">Login</a>
+        <a href="/register?type=vendor" class="btn btn-small">Sell on Bazar</a>
+      <% } %>
+    </nav>
+  </div>
+</header>
+<main class="container">
+  <% for (const f of flash) { %>
+    <div class="alert alert-<%= f.type %>"><%= f.message %></div>
+  <% } %>

@@ -1,0 +1,20 @@
+<%- include('../partials/header') %>
+<h1>My orders</h1>
+<% if (!orders.length) { %>
+  <div class="empty"><p>You haven't ordered anything yet.</p><a class="btn" href="/products">Start shopping</a></div>
+<% } else { %>
+  <table class="table card">
+    <thead><tr><th>Order</th><th>Date</th><th>Status</th><th class="right">Total</th></tr></thead>
+    <tbody>
+      <% for (const o of orders) { %>
+        <tr>
+          <td><a href="/account/orders/<%= o.id %>">#<%= o.id %></a></td>
+          <td><%= o.created_at.slice(0, 16) %></td>
+          <td><%- include('../partials/status', { s: o.status }) %></td>
+          <td class="right"><%= money(o.total) %></td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+<% } %>
+<%- include('../partials/footer') %>

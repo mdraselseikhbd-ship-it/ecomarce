@@ -1,0 +1,53 @@
+<%- include('../partials/header') %>
+<p class="crumbs small"><a href="/products">Shop</a><% if (product.category_name) { %> / <%= product.category_name %><% } %> / <%= product.name %></p>
+<section class="product-detail">
+  <div class="thumb thumb-lg">
+    <% if (product.image) { %><img src="<%= product.image %>" alt="<%= product.name %>"><% } else { %><span><%= product.name.charAt(0) %></span><% } %>
+  </div>
+  <div>
+    <h1><%= product.name %></h1>
+    <p>Sold by <a href="/store/<%= product.store_slug %>"><strong><%= product.store_name %></strong></a></p>
+    <% if (product.review_count) { %><p><span class="stars">★ <%= product.avg_rating %></span> <span class="muted">(<%= product.review_count %> reviews)</span></p><% } %>
+    <p class="price price-lg"><%= money(product.price) %></p>
+    <p class="small <%= product.stock > 0 ? 'text-green' : 'text-red' %>"><%= product.stock > 0 ? `${product.stock} in stock` : 'Out of stock' %></p>
+    <% if (product.stock > 0 && (!user || user.role === 'customer')) { %>
+      <form method="post" action="/cart/add" class="add-to-cart">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <input type="hidden" name="productId" value="<%= product.id %>">
+        <input type="number" name="quantity" value="1" min="1" max="<%= product.stock %>">
+        <button class="btn">Add to cart</button>
+        <button class="btn btn-ghost" name="redirect" value="cart">Buy now</button>
+      </form>
+    <% } %>
+    <div class="description"><%= product.description %></div>
+  </div>
+</section>
+
+<section id="reviews">
+  <h2>Reviews</h2>
+  <% if (canReview) { %>
+    <form method="post" action="/product/<%= product.slug %>/review" class="card review-form">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <label>Rating
+        <select name="rating"><% for (let i = 5; i >= 1; i--) { %><option value="<%= i %>"><%= '★'.repeat(i) %></option><% } %></select>
+      </label>
+      <label>Comment <textarea name="comment" rows="3"></textarea></label>
+      <button class="btn">Submit review</button>
+    </form>
+  <% } %>
+  <% for (const r of reviews) { %>
+    <div class="review">
+      <p><span class="stars"><%= '★'.repeat(r.rating) %><%= '☆'.repeat(5 - r.rating) %></span> <strong><%= r.user_name %></strong> <span class="muted small"><%= r.created_at.slice(0, 10) %></span></p>
+      <% if (r.comment) { %><p><%= r.comment %></p><% } %>
+    </div>
+  <% } %>
+  <% if (!reviews.length) { %><p class="muted">No reviews yet.</p><% } %>
+</section>
+
+<% if (related.length) { %>
+<section>
+  <h2>You may also like</h2>
+  <div class="grid"><% for (const p of related) { %><%- include('../partials/product-card', { p }) %><% } %></div>
+</section>
+<% } %>
+<%- include('../partials/footer') %>

@@ -1,0 +1,17 @@
+<%- include('../partials/header') %>
+<section class="store-header card">
+  <div class="avatar avatar-lg"><%= shop.name.charAt(0) %></div>
+  <div>
+    <h1><%= shop.name %></h1>
+    <p><%= shop.description %></p>
+    <% if (shop.phone) { %><p class="muted small">Phone: <%= shop.phone %></p><% } %>
+  </div>
+</section>
+<%- include('../partials/filters') %>
+<% if (products.length) { %>
+  <div class="grid"><% for (const p of products) { %><%- include('../partials/product-card', { p }) %><% } %></div>
+<% } else { %>
+  <div class="empty"><p>No products found in this store.</p></div>
+<% } %>
+<%- include('../partials/pagination') %>
+<%- include('../partials/footer') %>

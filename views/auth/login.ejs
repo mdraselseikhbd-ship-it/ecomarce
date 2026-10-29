@@ -1,0 +1,13 @@
+<%- include('../partials/header') %>
+<section class="auth card">
+  <h1>Login</h1>
+  <form method="post" action="/login">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="next" value="<%= next %>">
+    <label>Email <input type="email" name="email" value="<%= email %>" required autofocus></label>
+    <label>Password <input type="password" name="password" required></label>
+    <button class="btn btn-block">Login</button>
+  </form>
+  <p class="muted small">New here? <a href="/register">Create a customer account</a> or <a href="/register?type=vendor">open a store</a>.</p>
+</section>
+<%- include('../partials/footer') %>

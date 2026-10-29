@@ -1,0 +1,17 @@
+<%- include('../partials/header') %>
+<%- include('../partials/admin-nav') %>
+<% if (stats.pendingStores) { %><div class="alert alert-info"><%= stats.pendingStores %> store(s) waiting for approval. <a href="/admin/vendors">Review →</a></div><% } %>
+<div class="stats">
+  <div class="stat card"><span>Customers</span><strong><%= stats.users %></strong></div>
+  <div class="stat card"><span>Active stores</span><strong><%= stats.stores %></strong></div>
+  <div class="stat card"><span>Products</span><strong><%= stats.products %></strong></div>
+  <div class="stat card"><span>Orders</span><strong><%= stats.orders %></strong></div>
+  <div class="stat card"><span>Gross sales</span><strong><%= money(stats.gmv) %></strong></div>
+  <div class="stat card"><span>Commission earned</span><strong><%= money(stats.revenue) %></strong></div>
+</div>
+<h2>Top stores</h2>
+<table class="table card">
+  <thead><tr><th>Store</th><th class="right">Sales</th></tr></thead>
+  <tbody><% for (const s of topStores) { %><tr><td><%= s.name %></td><td class="right"><%= money(s.sales) %></td></tr><% } %></tbody>
+</table>
+<%- include('../partials/footer') %>

@@ -1,0 +1,20 @@
+<%- include('../partials/header') %>
+<%- include('../partials/admin-nav') %>
+<% if (!orders.length) { %><div class="empty"><p>No orders yet.</p></div><% } %>
+<% for (const o of orders) { %>
+  <div class="card order-card">
+    <div class="row-between">
+      <strong>#<%= o.id %> · <%= o.customer_name %> <span class="muted small"><%= o.customer_email %></span></strong>
+      <span><%- include('../partials/status', { s: o.status }) %> <strong><%= money(o.total) %></strong></span>
+    </div>
+    <p class="muted small"><%= o.created_at %> · <%= o.vendor_count %> seller(s) · <%= o.payment_method === 'bkash' ? 'bKash' : 'COD' %> · <%= o.phone %> · <%= o.address %></p>
+    <table class="table">
+      <% for (const i of o.items) { %>
+        <tr><td><%= i.product_name %> × <%= i.quantity %></td><td><%= i.store_name %></td>
+          <td><%- include('../partials/status', { s: i.status }) %></td>
+          <td class="right"><%= money(i.unit_price * i.quantity) %></td><td class="right muted small">fee <%= money(i.commission) %></td></tr>
+      <% } %>
+    </table>
+  </div>
+<% } %>
+<%- include('../partials/footer') %>

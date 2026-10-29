@@ -1,0 +1,30 @@
+<%- include('../partials/header') %>
+<%- include('../partials/vendor-nav') %>
+<section class="card form-card">
+  <h2><%= title %></h2>
+  <% if (errors.length) { %><div class="alert alert-error"><ul><% for (const e of errors) { %><li><%= e %></li><% } %></ul></div><% } %>
+  <form method="post" enctype="multipart/form-data"
+        action="<%= product.id ? `/vendor/products/${product.id}/edit` : '/vendor/products/new' %>?_csrf=<%= csrfToken %>">
+    <label>Name <input name="name" value="<%= product.name || '' %>" required></label>
+    <label>Category
+      <select name="category_id">
+        <option value="">— None —</option>
+        <% for (const c of categories) { %><option value="<%= c.id %>" <%= Number(product.category_id) === c.id ? 'selected' : '' %>><%= c.name %></option><% } %>
+      </select>
+    </label>
+    <div class="row">
+      <label>Price (৳) <input type="number" name="price" step="0.01" min="0" value="<%= product.price ?? '' %>" required></label>
+      <label>Stock <input type="number" name="stock" min="0" value="<%= product.stock ?? 0 %>" required></label>
+    </div>
+    <label>Description <textarea name="description" rows="5"><%= product.description || '' %></textarea></label>
+    <label>Image (JPG/PNG/WebP, max 2 MB) <input type="file" name="image" accept="image/*"></label>
+    <% if (product.image) { %>
+      <p><img src="<%= product.image %>" alt="" class="preview"></p>
+      <label class="radio"><input type="checkbox" name="remove_image" value="1"> Remove current image</label>
+    <% } %>
+    <label class="radio"><input type="checkbox" name="is_active" value="1" <%= product.is_active ? 'checked' : '' %>> Visible in shop</label>
+    <button class="btn">Save product</button>
+    <a href="/vendor/products" class="btn btn-ghost">Cancel</a>
+  </form>
+</section>
+<%- include('../partials/footer') %>

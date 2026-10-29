@@ -1,0 +1,14 @@
+<%- include('../partials/header') %>
+<h1>Stores</h1>
+<div class="grid">
+  <% for (const s of stores) { %>
+    <a class="card store-card" href="/store/<%= s.slug %>">
+      <div class="avatar"><%= s.name.charAt(0) %></div>
+      <h3><%= s.name %></h3>
+      <p class="muted small"><%= s.description %></p>
+      <p class="small"><%= s.product_count %> products</p>
+    </a>
+  <% } %>
+</div>
+<% if (!stores.length) { %><div class="empty"><p>No stores yet.</p></div><% } %>
+<%- include('../partials/footer') %>

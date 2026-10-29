@@ -1,0 +1,24 @@
+<%- include('../partials/header') %>
+<%- include('../partials/admin-nav') %>
+<table class="table card">
+  <thead><tr><th>Product</th><th>Store</th><th>Category</th><th class="right">Price</th><th class="right">Stock</th><th>Visible</th><th></th></tr></thead>
+  <tbody>
+    <% for (const p of products) { %>
+      <tr>
+        <td><a href="/product/<%= p.slug %>"><%= p.name %></a></td>
+        <td><%= p.store_name %></td>
+        <td><%= p.category_name || '—' %></td>
+        <td class="right"><%= money(p.price) %></td>
+        <td class="right"><%= p.stock %></td>
+        <td><%= p.is_active ? 'Yes' : 'Hidden' %></td>
+        <td class="right">
+          <form method="post" action="/admin/products/<%= p.id %>/toggle" class="inline">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button class="link"><%= p.is_active ? 'Hide' : 'Show' %></button>
+          </form>
+        </td>
+      </tr>
+    <% } %>
+  </tbody>
+</table>
+<%- include('../partials/footer') %>

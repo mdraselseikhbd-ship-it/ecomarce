@@ -1,0 +1,14 @@
+<%- include('../partials/header') %>
+<section class="auth card">
+  <h1>Profile</h1>
+  <form method="post" action="/account/profile">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label>Name <input name="name" value="<%= user.name %>" required></label>
+    <label>Email <input value="<%= user.email %>" disabled></label>
+    <h3>Change password</h3>
+    <label>Current password <input type="password" name="current_password"></label>
+    <label>New password <input type="password" name="new_password" minlength="6"></label>
+    <button class="btn btn-block">Save</button>
+  </form>
+</section>
+<%- include('../partials/footer') %>

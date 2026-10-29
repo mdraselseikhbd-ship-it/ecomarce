@@ -1,0 +1,36 @@
+<%- include('../partials/header') %>
+<div class="section-head">
+  <h1>Order #<%= order.id %> <%- include('../partials/status', { s: order.status }) %></h1>
+  <% if (items.some((i) => i.status === 'pending')) { %>
+    <form method="post" action="/account/orders/<%= order.id %>/cancel" onsubmit="return confirm('Cancel all pending items?')">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button class="btn btn-ghost text-red">Cancel pending items</button>
+    </form>
+  <% } %>
+</div>
+<div class="two-col">
+  <div class="card">
+    <table class="table">
+      <thead><tr><th>Item</th><th>Seller</th><th>Qty</th><th>Status</th><th class="right">Subtotal</th></tr></thead>
+      <tbody>
+        <% for (const i of items) { %>
+          <tr>
+            <td><% if (i.product_slug) { %><a href="/product/<%= i.product_slug %>"><%= i.product_name %></a><% } else { %><%= i.product_name %><% } %></td>
+            <td><a href="/store/<%= i.store_slug %>"><%= i.store_name %></a></td>
+            <td><%= i.quantity %></td>
+            <td><%- include('../partials/status', { s: i.status }) %></td>
+            <td class="right"><%= money(i.unit_price * i.quantity) %></td>
+          </tr>
+        <% } %>
+      </tbody>
+    </table>
+    <p class="right"><strong>Total: <%= money(order.total) %></strong></p>
+  </div>
+  <aside class="card">
+    <h3>Delivery</h3>
+    <p><%= order.shipping_name %><br><%= order.phone %><br><%= order.address %></p>
+    <p class="small muted">Payment: <%= order.payment_method === 'bkash' ? 'bKash' : 'Cash on delivery' %><br>Placed: <%= order.created_at %></p>
+    <p class="small muted">Once an item is delivered you can leave a review on its product page.</p>
+  </aside>
+</div>
+<%- include('../partials/footer') %>

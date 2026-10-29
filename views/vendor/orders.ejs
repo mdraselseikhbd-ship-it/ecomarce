@@ -1,0 +1,35 @@
+<%- include('../partials/header') %>
+<%- include('../partials/vendor-nav') %>
+<div class="chips">
+  <% for (const s of ['', 'pending', 'processing', 'shipped', 'delivered', 'cancelled']) { %>
+    <a class="chip <%= s === status ? 'active' : '' %>" href="/vendor/orders<%= s ? '?status=' + s : '' %>"><%= s || 'all' %></a>
+  <% } %>
+</div>
+<% const next = { pending: ['processing', 'cancelled'], processing: ['shipped', 'cancelled'], shipped: ['delivered'] }; %>
+<% if (items.length) { %>
+  <table class="table card">
+    <thead><tr><th>Order</th><th>Item</th><th>Ship to</th><th class="right">Amount</th><th>Status</th><th>Action</th></tr></thead>
+    <tbody>
+      <% for (const i of items) { %>
+        <tr>
+          <td>#<%= i.order_id %><br><span class="muted small"><%= i.created_at.slice(0, 16) %></span></td>
+          <td><%= i.product_name %> × <%= i.quantity %></td>
+          <td class="small"><%= i.shipping_name %><br><%= i.phone %><br><%= i.address %><br><span class="muted"><%= i.payment_method === 'bkash' ? 'bKash' : 'COD' %></span></td>
+          <td class="right"><%= money(i.unit_price * i.quantity) %><br><span class="muted small">fee <%= money(i.commission) %></span></td>
+          <td><%- include('../partials/status', { s: i.status }) %></td>
+          <td class="nowrap">
+            <% for (const n of (next[i.status] || [])) { %>
+              <form method="post" action="/vendor/orders/items/<%= i.id %>/status" class="inline">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <input type="hidden" name="status" value="<%= n %>">
+                <input type="hidden" name="filter" value="<%= status %>">
+                <button class="btn btn-small <%= n === 'cancelled' ? 'btn-ghost text-red' : '' %>"><%= n === 'cancelled' ? 'Cancel' : 'Mark ' + n %></button>
+              </form>
+            <% } %>
+          </td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+<% } else { %><div class="empty"><p>No orders here.</p></div><% } %>
+<%- include('../partials/footer') %>

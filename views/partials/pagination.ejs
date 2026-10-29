@@ -1,0 +1,8 @@
+<% if (totalPages > 1) { %>
+  <nav class="pagination">
+    <% for (let i = 1; i <= totalPages; i++) {
+         const params = new URLSearchParams({ ...(q ? { q } : {}), ...(category ? { category } : {}), sort, page: i }); %>
+      <a href="<%= baseUrl %>?<%= params %>" class="<%= i === page ? 'active' : '' %>"><%= i %></a>
+    <% } %>
+  </nav>
+<% } %>

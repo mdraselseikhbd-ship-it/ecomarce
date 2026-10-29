@@ -1,0 +1,47 @@
+<%- include('../partials/header') %>
+<section class="hero">
+  <div>
+    <h1>Many sellers. One cart.</h1>
+    <p>Shop from trusted local stores across the country — pay cash on delivery.</p>
+    <a class="btn" href="/products">Start shopping</a>
+    <% if (!user) { %><a class="btn btn-ghost" href="/register?type=vendor">Become a seller</a><% } %>
+  </div>
+</section>
+
+<section>
+  <div class="chips">
+    <% for (const c of categories) { %><a class="chip" href="/products?category=<%= c.slug %>"><%= c.name %></a><% } %>
+  </div>
+</section>
+
+<% if (bestSellers.length) { %>
+<section>
+  <h2>Best sellers</h2>
+  <div class="grid"><% for (const p of bestSellers) { %><%- include('../partials/product-card', { p }) %><% } %></div>
+</section>
+<% } %>
+
+<section>
+  <div class="section-head"><h2>New arrivals</h2><a href="/products">See all →</a></div>
+  <% if (latest.length) { %>
+    <div class="grid"><% for (const p of latest) { %><%- include('../partials/product-card', { p }) %><% } %></div>
+  <% } else { %>
+    <p class="muted">No products yet. Run <code>npm run seed</code> for demo data.</p>
+  <% } %>
+</section>
+
+<% if (stores.length) { %>
+<section>
+  <div class="section-head"><h2>Featured stores</h2><a href="/stores">All stores →</a></div>
+  <div class="grid">
+    <% for (const s of stores) { %>
+      <a class="card store-card" href="/store/<%= s.slug %>">
+        <div class="avatar"><%= s.name.charAt(0) %></div>
+        <h3><%= s.name %></h3>
+        <p class="muted small"><%= s.product_count %> products</p>
+      </a>
+    <% } %>
+  </div>
+</section>
+<% } %>
+<%- include('../partials/footer') %>

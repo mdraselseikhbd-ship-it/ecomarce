@@ -1,0 +1,12 @@
+<div class="panel-head">
+  <h1><%= store.name %> <%- include('status', { s: store.status }) %></h1>
+  <% if (store.status === 'approved') { %><a href="/store/<%= store.slug %>">View storefront →</a><% } %>
+</div>
+<% if (store.status === 'pending') { %><div class="alert alert-info">Your store is awaiting admin approval. Products will be visible to customers once approved.</div><% } %>
+<% if (store.status === 'suspended') { %><div class="alert alert-error">Your store is suspended. Please contact the marketplace admin.</div><% } %>
+<nav class="subnav">
+  <a href="/vendor" class="<%= currentPath === '/vendor' ? 'active' : '' %>">Dashboard</a>
+  <a href="/vendor/products" class="<%= currentPath.startsWith('/vendor/products') ? 'active' : '' %>">Products</a>
+  <a href="/vendor/orders" class="<%= currentPath.startsWith('/vendor/orders') ? 'active' : '' %>">Orders</a>
+  <a href="/vendor/settings" class="<%= currentPath.startsWith('/vendor/settings') ? 'active' : '' %>">Settings</a>
+</nav>

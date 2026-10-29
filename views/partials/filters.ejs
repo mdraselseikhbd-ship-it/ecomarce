@@ -1,0 +1,16 @@
+<form class="filters" method="get" action="<%= baseUrl %>">
+  <input type="search" name="q" placeholder="Search…" value="<%= q %>">
+  <select name="category">
+    <option value="">All categories</option>
+    <% for (const c of categories) { %>
+      <option value="<%= c.slug %>" <%= c.slug === category ? 'selected' : '' %>><%= c.name %></option>
+    <% } %>
+  </select>
+  <select name="sort">
+    <option value="newest" <%= sort === 'newest' ? 'selected' : '' %>>Newest</option>
+    <option value="price_asc" <%= sort === 'price_asc' ? 'selected' : '' %>>Price: low to high</option>
+    <option value="price_desc" <%= sort === 'price_desc' ? 'selected' : '' %>>Price: high to low</option>
+    <option value="rating" <%= sort === 'rating' ? 'selected' : '' %>>Top rated</option>
+  </select>
+  <button class="btn">Filter</button>
+</form>

@@ -1,0 +1,24 @@
+<%- include('../partials/header') %>
+<%- include('../partials/vendor-nav') %>
+<div class="stats">
+  <div class="stat card"><span>Products</span><strong><%= stats.products %></strong></div>
+  <div class="stat card"><span>Orders</span><strong><%= stats.orders %></strong></div>
+  <div class="stat card"><span>Pending items</span><strong><%= stats.pending %></strong></div>
+  <div class="stat card"><span>Gross sales</span><strong><%= money(stats.gross) %></strong></div>
+  <div class="stat card"><span>Commission</span><strong><%= money(stats.commission) %></strong></div>
+  <div class="stat card"><span>Earned (delivered)</span><strong><%= money(stats.earned) %></strong></div>
+</div>
+<% if (stats.lowStock) { %><div class="alert alert-info"><%= stats.lowStock %> product(s) have 5 or fewer items in stock. <a href="/vendor/products">Restock →</a></div><% } %>
+<h2>Recent order items</h2>
+<% if (recent.length) { %>
+  <table class="table card">
+    <thead><tr><th>Order</th><th>Item</th><th>Customer</th><th>Status</th><th class="right">Amount</th></tr></thead>
+    <tbody>
+      <% for (const i of recent) { %>
+        <tr><td>#<%= i.order_id %></td><td><%= i.product_name %> × <%= i.quantity %></td><td><%= i.shipping_name %></td>
+          <td><%- include('../partials/status', { s: i.status }) %></td><td class="right"><%= money(i.unit_price * i.quantity) %></td></tr>
+      <% } %>
+    </tbody>
+  </table>
+<% } else { %><p class="muted">No orders yet.</p><% } %>
+<%- include('../partials/footer') %>

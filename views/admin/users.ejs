@@ -1,0 +1,11 @@
+<%- include('../partials/header') %>
+<%- include('../partials/admin-nav') %>
+<table class="table card">
+  <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Joined</th></tr></thead>
+  <tbody>
+    <% for (const u of users) { %>
+      <tr><td><%= u.id %></td><td><%= u.name %></td><td><%= u.email %></td><td><span class="tag"><%= u.role %></span></td><td><%= u.created_at.slice(0, 10) %></td></tr>
+    <% } %>
+  </tbody>
+</table>
+<%- include('../partials/footer') %>

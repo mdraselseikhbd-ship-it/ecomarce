@@ -1,0 +1,23 @@
+{
+  "name": "ecomarce",
+  "version": "1.0.0",
+  "description": "Multivendor e-commerce marketplace (Node.js + Express + SQLite)",
+  "main": "src/app.js",
+  "private": true,
+  "scripts": {
+    "start": "node --no-warnings=ExperimentalWarning src/app.js",
+    "dev": "node --no-warnings=ExperimentalWarning --watch src/app.js",
+    "seed": "node --no-warnings=ExperimentalWarning src/seed.js",
+    "test": "node --no-warnings=ExperimentalWarning --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "ejs": "^7.0.2",
+    "express": "^5.3.0",
+    "express-session": "^1.19.0",
+    "multer": "^2.5.0"
+  }
+}

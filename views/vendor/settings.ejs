@@ -1,0 +1,13 @@
+<%- include('../partials/header') %>
+<%- include('../partials/vendor-nav') %>
+<section class="card form-card">
+  <h2>Store settings</h2>
+  <form method="post" action="/vendor/settings">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label>Store name <input name="name" value="<%= store.name %>" required></label>
+    <label>Phone <input name="phone" value="<%= store.phone %>"></label>
+    <label>Description <textarea name="description" rows="4"><%= store.description %></textarea></label>
+    <button class="btn">Save</button>
+  </form>
+</section>
+<%- include('../partials/footer') %>

@@ -1,0 +1,25 @@
+<%- include('../partials/header') %>
+<section class="auth card">
+  <h1><%= type === 'vendor' ? 'Open your store' : 'Create account' %></h1>
+  <div class="tabs">
+    <a href="/register" class="<%= type === 'customer' ? 'active' : '' %>">I want to buy</a>
+    <a href="/register?type=vendor" class="<%= type === 'vendor' ? 'active' : '' %>">I want to sell</a>
+  </div>
+  <% if (errors.length) { %><div class="alert alert-error"><ul><% for (const e of errors) { %><li><%= e %></li><% } %></ul></div><% } %>
+  <form method="post" action="/register">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="type" value="<%= type %>">
+    <label>Full name <input name="name" value="<%= form.name || '' %>" required></label>
+    <label>Email <input type="email" name="email" value="<%= form.email || '' %>" required></label>
+    <% if (type === 'vendor') { %>
+      <label>Store name <input name="storeName" value="<%= form.storeName || '' %>" required></label>
+      <label>Store phone <input name="phone" value="<%= form.phone || '' %>"></label>
+      <label>About your store <textarea name="storeDescription" rows="3"><%= form.storeDescription || '' %></textarea></label>
+    <% } %>
+    <label>Password <input type="password" name="password" minlength="6" required></label>
+    <label>Confirm password <input type="password" name="confirm" minlength="6" required></label>
+    <button class="btn btn-block"><%= type === 'vendor' ? 'Create store' : 'Create account' %></button>
+  </form>
+  <% if (type === 'vendor') { %><p class="muted small">New stores are reviewed by an admin before products go live.</p><% } %>
+</section>
+<%- include('../partials/footer') %>

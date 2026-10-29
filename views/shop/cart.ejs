@@ -1,0 +1,41 @@
+<%- include('../partials/header') %>
+<h1>Your cart</h1>
+<% if (!items.length) { %>
+  <div class="empty"><p>Your cart is empty.</p><a class="btn" href="/products">Browse products</a></div>
+<% } else { %>
+  <% for (const g of groups) { %>
+    <div class="card cart-group">
+      <h3>From <a href="/store/<%= g.store_slug %>"><%= g.store_name %></a></h3>
+      <table class="table">
+        <% for (const i of g.items) { %>
+          <tr>
+            <td><a href="/product/<%= i.slug %>"><%= i.name %></a><br><span class="muted small"><%= money(i.price) %> each</span></td>
+            <td>
+              <form method="post" action="/cart/update" class="inline">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <input type="hidden" name="productId" value="<%= i.id %>">
+                <input type="number" name="quantity" value="<%= i.quantity %>" min="0" max="<%= i.stock %>" class="qty">
+                <button class="btn btn-small btn-ghost">Update</button>
+              </form>
+            </td>
+            <td class="right"><%= money(i.subtotal) %></td>
+            <td class="right">
+              <form method="post" action="/cart/update" class="inline">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <input type="hidden" name="productId" value="<%= i.id %>">
+                <input type="hidden" name="quantity" value="0">
+                <button class="link text-red">Remove</button>
+              </form>
+            </td>
+          </tr>
+        <% } %>
+      </table>
+      <p class="right small muted">Store subtotal: <%= money(g.subtotal) %></p>
+    </div>
+  <% } %>
+  <div class="cart-total card">
+    <p>Total <strong class="price-lg"><%= money(total) %></strong></p>
+    <a class="btn" href="/checkout">Proceed to checkout</a>
+  </div>
+<% } %>
+<%- include('../partials/footer') %>

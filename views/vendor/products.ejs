@@ -1,0 +1,27 @@
+<%- include('../partials/header') %>
+<%- include('../partials/vendor-nav') %>
+<div class="section-head"><h2>Products</h2><a class="btn" href="/vendor/products/new">+ Add product</a></div>
+<% if (products.length) { %>
+  <table class="table card">
+    <thead><tr><th>Name</th><th>Category</th><th class="right">Price</th><th class="right">Stock</th><th>Visible</th><th></th></tr></thead>
+    <tbody>
+      <% for (const p of products) { %>
+        <tr>
+          <td><%= p.name %></td>
+          <td><%= p.category_name || '—' %></td>
+          <td class="right"><%= money(p.price) %></td>
+          <td class="right <%= p.stock <= 5 ? 'text-red' : '' %>"><%= p.stock %></td>
+          <td><%= p.is_active ? 'Yes' : 'No' %></td>
+          <td class="right nowrap">
+            <a href="/vendor/products/<%= p.id %>/edit">Edit</a>
+            <form method="post" action="/vendor/products/<%= p.id %>/delete" class="inline" onsubmit="return confirm('Delete this product?')">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button class="link text-red">Delete</button>
+            </form>
+          </td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+<% } else { %><div class="empty"><p>No products yet.</p></div><% } %>
+<%- include('../partials/footer') %>

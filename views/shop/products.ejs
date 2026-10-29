@@ -1,0 +1,11 @@
+<%- include('../partials/header') %>
+<h1>Products</h1>
+<%- include('../partials/filters') %>
+<p class="muted small"><%= total %> result<%= total === 1 ? '' : 's' %></p>
+<% if (products.length) { %>
+  <div class="grid"><% for (const p of products) { %><%- include('../partials/product-card', { p }) %><% } %></div>
+<% } else { %>
+  <div class="empty"><p>No products match your search.</p></div>
+<% } %>
+<%- include('../partials/pagination') %>
+<%- include('../partials/footer') %>

@@ -1,0 +1,25 @@
+<%- include('../partials/header') %>
+<%- include('../partials/admin-nav') %>
+<table class="table card">
+  <thead><tr><th>Store</th><th>Owner</th><th>Products</th><th>Status</th><th>Action</th></tr></thead>
+  <tbody>
+    <% for (const v of vendors) { %>
+      <tr>
+        <td><strong><%= v.name %></strong><br><span class="muted small"><%= v.description %></span></td>
+        <td><%= v.owner_name %><br><span class="muted small"><%= v.owner_email %><%= v.phone ? ' · ' + v.phone : '' %></span></td>
+        <td><%= v.product_count %></td>
+        <td><%- include('../partials/status', { s: v.status }) %></td>
+        <td class="nowrap">
+          <% for (const [s, label] of [['approved', 'Approve'], ['suspended', 'Suspend']]) { if (v.status === s) continue; %>
+            <form method="post" action="/admin/vendors/<%= v.id %>/status" class="inline">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <input type="hidden" name="status" value="<%= s %>">
+              <button class="btn btn-small <%= s === 'suspended' ? 'btn-ghost text-red' : '' %>"><%= label %></button>
+            </form>
+          <% } %>
+        </td>
+      </tr>
+    <% } %>
+  </tbody>
+</table>
+<%- include('../partials/footer') %>

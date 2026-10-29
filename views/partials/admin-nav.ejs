@@ -1,0 +1,6 @@
+<div class="panel-head"><h1>Admin</h1></div>
+<nav class="subnav">
+  <% for (const [href, label] of [['/admin', 'Dashboard'], ['/admin/vendors', 'Vendors'], ['/admin/products', 'Products'], ['/admin/orders', 'Orders'], ['/admin/categories', 'Categories'], ['/admin/users', 'Users'], ['/admin/settings', 'Settings']]) { %>
+    <a href="<%= href %>" class="<%= (href === '/admin' ? currentPath === href : currentPath.startsWith(href)) ? 'active' : '' %>"><%= label %></a>
+  <% } %>
+</nav>

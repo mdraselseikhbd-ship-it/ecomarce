@@ -1,0 +1,29 @@
+<%- include('../partials/header') %>
+<h1>Checkout</h1>
+<div class="two-col">
+  <form method="post" action="/checkout" class="card">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <% if (errors.length) { %><div class="alert alert-error"><ul><% for (const e of errors) { %><li><%= e %></li><% } %></ul></div><% } %>
+    <h3>Delivery details</h3>
+    <label>Full name <input name="shipping_name" value="<%= form.shipping_name || '' %>" required></label>
+    <label>Phone <input name="phone" value="<%= form.phone || '' %>" placeholder="01XXXXXXXXX" required></label>
+    <label>Address <textarea name="address" rows="3" required><%= form.address || '' %></textarea></label>
+    <h3>Payment</h3>
+    <label class="radio"><input type="radio" name="payment_method" value="cod" <%= form.payment_method !== 'bkash' ? 'checked' : '' %>> Cash on delivery</label>
+    <label class="radio"><input type="radio" name="payment_method" value="bkash" <%= form.payment_method === 'bkash' ? 'checked' : '' %>> bKash (seller will contact you)</label>
+    <button class="btn btn-block">Place order — <%= money(total) %></button>
+  </form>
+  <aside class="card">
+    <h3>Order summary</h3>
+    <% for (const g of groups) { %>
+      <p class="small muted"><%= g.store_name %></p>
+      <% for (const i of g.items) { %>
+        <div class="row-between small"><span><%= i.name %> × <%= i.quantity %></span><span><%= money(i.subtotal) %></span></div>
+      <% } %>
+    <% } %>
+    <hr>
+    <div class="row-between"><strong>Total</strong><strong><%= money(total) %></strong></div>
+    <p class="muted small">Your order will be shipped separately by each seller.</p>
+  </aside>
+</div>
+<%- include('../partials/footer') %>
